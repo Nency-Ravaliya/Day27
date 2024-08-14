@@ -1,4 +1,137 @@
-# Day27
+# AWS Deployment Guide for App1 and App2
+
+### This guide details the process of deploying two lightweight web applications, "App1" and "App2," on AWS using EC2 instances and an Application Load Balancer (ALB) with path-based routing. Each application is deployed on two EC2 t2.micro instances for cost efficiency.
+
+## Table of Contents
+**Prerequisites**
+Step 1: EC2 Instance Setup
+Step 2: Security Group Configuration
+Step 3: Application Load Balancer Setup with Path-Based Routing
+Step 4: Testing and Validation
+Nginx Configuration
+
+### Prerequisites
+
+An AWS account with access to the AWS Management Console.
+SSH key pair for accessing EC2 instances.
+Basic knowledge of AWS services (EC2, ALB, etc.).
+
+
+## Step 1: EC2 Instance Setup
+
+**Launch EC2 Instances**
+Go to the EC2 Dashboard:
+
+Navigate to the EC2 Dashboard in the AWS Management Console.
+
+Launch Four EC2 Instances:
+
+AMI: Amazon Linux 2 AMI.
+Instance Type: t2.micro.
+Network: Choose your VPC and subnets.
+Security Groups: Select an existing security group or create a new one (we'll configure this in the next step).
+Tags: Add tags for identification (e.g., "App1-Instance1," "App1-Instance2," "App2-Instance1," "App2-Instance2").
+Key Pair: Select an existing key pair or create a new one for SSH access.
+SSH into Each Instance:
+
+Use the following command to SSH into each instance:
+
+```
+ssh -i your-key.pem ec2-user@<public-ip-address>
+```
+
+Deploy "App1" and "App2":
+
+App1: Deploy "App1" on two instances.
+App2: Deploy "App2" on the other two instances.
+Use the following commands to set up a simple Nginx server (modify based on your application):
+
+
+```
+sudo yum update -y
+sudo amazon-linux-extras install nginx1 -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+Nginx Configuration:
+
+## Step 2: Security Group Configuration
+
+### Create Security Groups
+Create a Security Group for EC2 Instances:
+
+Inbound Rules:
+HTTP (Port 80): Allow from anywhere.
+SSH (Port 22): Allow only from your IP address.
+
+Create a Security Group for ALB:
+
+Inbound Rules:
+HTTP (Port 80): Allow from anywhere.
+Attach Security Groups:
+
+Attach the appropriate security groups to the EC2 instances and the ALB.
+
+## Step 3: Application Load Balancer Setup with Path-Based Routing
+
+### Create an Application Load Balancer (ALB)
+
+Go to the EC2 Dashboard:
+Navigate to the Load Balancers section in the EC2 Dashboard.
+Create an ALB:
+Name: Provide a name for the ALB.
+Scheme: Internet-facing.
+Listeners: Add a listener on port 80.
+Availability Zones: Select the VPC and subnets where your EC2 instances are running.
+Configure Target Groups
+Create Two Target Groups:
+
+Target Group 1:
+Name: app1-target-group.
+Target Type: Instance.
+Protocol: HTTP.
+Port: 80.
+Health Check Path: /app1.
+Target Group 2:
+Name: app2-target-group.
+Target Type: Instance.
+Protocol: HTTP.
+Port: 80.
+Health Check Path: /app2.
+Register EC2 Instances:
+
+Register the "App1" instances with app1-target-group.
+Register the "App2" instances with app2-target-group.
+Configure Path-Based Routing
+Set Up Routing Rules:
+
+In the ALB listener settings, add rules for path-based routing:
+/app1: Forward to app1-target-group.
+/app2: Forward to app2-target-group.
+Review and Create the ALB:
+
+Review your settings and create the ALB.
+
+## Step 4: Testing and Validation
+
+### Test Path-Based Routing
+Access the ALB DNS Name:
+Open a browser and navigate to the ALB's DNS name:
+http://<ALB-DNS-Name>/app1: This should route to the "App1" instances.
+http://<ALB-DNS-Name>/app2: This should route to the "App2" instances.
+Security Validation
+SSH Access:
+Attempt to SSH into the EC2 instances using their public IPs to confirm that only your IP address can access them.	
+
+Nginx Configuration
+For each application, replace the default Nginx configuration with the following:
+
+Configuration for "App1" (/etc/nginx/nginx.conf):
+
+download the nginx.conf file from repo.
+
+
+## Output:
 
 ![image](https://github.com/user-attachments/assets/11b2592f-3cf1-4709-8313-47e5993781a1)
 ![image](https://github.com/user-attachments/assets/e0d272f1-a0a9-472a-84f8-6152ae5e95fc)
